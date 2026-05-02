@@ -42,7 +42,7 @@ SOC Analyst candidate building **proactive threat detection** and malware triage
 | **Endpoint Monitoring** |	Windows Event Logs & Sysmon |
 ---
 
-### Featured Engineering Projects
+## Featured Engineering Projects
 
 * **[Sentinel-Native AI-Augmented Triage Agent](https://github.com/eabboa/eabboa/blob/main/Home-Labs/Sentinel_Native_AI_Augmented_Triage_Agent.md)**
     * ***Architecture***: Engineered a **bidirectional SOAR-lite pipeline** utilizing **LangGraph StateGraph** with **conditional routing** to dynamically orchestrate a $0-cost triage workflow via **Azure REST APIs** and **Managed Identities** (zero-secret architecture).
