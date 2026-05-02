@@ -65,36 +65,69 @@ That is the architecture SOAR platforms implement. This is a recreation of it fo
 
 Each node adheres to the **Single Responsibility Principle**. The pipeline state is managed by `TriageState`, a `TypedDict` used for LangGraph state management.
 
-
-
-```mermaid
-flowchart TD
-    START([START]) --> fetch
-    fetch["fetch<br/>GET incident + POST alerts via Sentinel REST API"]
-    fetch --> summarize
-    summarize["summarize<br/>Deterministic truncation (no LLM)"]
-    summarize --> extract
-    extract["extract<br/>Regex (IPs/hashes/URLs) + LLM (usernames/hostnames)"]
-    extract --> hasIOCs{has IOCs?}
-    hasIOCs -- yes --> enrich["enrich"]
-    hasIOCs -- no IOCs --> analyst
-    enrich --> analyst
-    analyst["analyst<br/>LLM verdict + RAG few-shot correction"]
-    analyst -- "TP > 90%" --> escalation["escalation"]
-    analyst -- ambiguous --> kql["kql"]
-    analyst -- "FP > 95%" --> writeback
-    escalation --> writeback
-    kql --> writeback
-    writeback["writeback<br/>POST triage comment to Sentinel"]
-    writeback --> INTERRUPT[/"══ INTERRUPT ══<br/>human review gate"/]
-    INTERRUPT -- containment approved --> containment
-    INTERRUPT -- no containment --> close_review
-    containment["containment<br/>MDE isolate"]
-    containment --> close_review
-    close_review["close_review<br/>Sentinel close (if analyst approves)"]
-    close_review --> learning
-    learning["learning<br/>RAG correction loop (ChromaDB)"]
-    learning --> END([END])
+```
+                    ┌───────┐
+                    │ START │
+                    └───┬───┘
+                        │
+                   ┌────▼────┐
+                   │  fetch  │  GET incident + POST alerts via Sentinel REST API
+                   └────┬────┘
+                        │
+                 ┌──────▼──────┐
+                 │  summarize  │  Deterministic truncation (no LLM)
+                 └──────┬──────┘
+                        │
+                  ┌─────▼─────┐
+                  │  extract  │  Regex (IPs/hashes/URLs) + LLM (usernames/hostnames)
+                  └─────┬─────┘
+                        │
+              ┌─────────┴─────────┐
+       has IOCs?              no IOCs
+              │                   │
+        ┌─────▼─────┐             │
+        │  enrich   │             │
+        └─────┬─────┘             │
+              └─────────┬─────────┘
+                        │
+                  ┌─────▼─────┐
+                  │  analyst  │  LLM verdict + RAG few-shot correction
+                  └─────┬─────┘
+                        │
+          ┌─────────────┼─────────────┐
+     TP > 90%      ambiguous      FP > 95%
+          │             │             │
+   ┌──────▼──────┐ ┌───▼───┐          │
+   │ escalation  │ │  kql  │          │
+   └──────┬──────┘ └───┬───┘          │
+          └─────────────┼─────────────┘
+                        │
+                 ┌──────▼──────┐
+                 │  writeback  │  POST triage comment to Sentinel
+                 └──────┬──────┘
+                        │
+              ══════ INTERRUPT ══════  (human review gate)
+                        │
+           ┌────────────┴────────────┐
+    containment                 no containment
+    approved?                        │
+           │                         │
+   ┌───────▼───────┐                 │
+   │  containment  │  MDE isolate    │
+   └───────┬───────┘                 │
+           └────────────┬────────────┘
+                        │
+                ┌───────▼───────┐
+                │ close_review  │  Sentinel close (if analyst approves)
+                └───────┬───────┘
+                        │
+                 ┌──────▼──────┐
+                 │  learning   │  RAG correction loop (ChromaDB)
+                 └──────┬──────┘
+                        │
+                    ┌───▼───┐
+                    │  END  │
+                    └───────┘
 ```
 
 ### Conditional Routing Logic
