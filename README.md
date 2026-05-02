@@ -1,1 +1,1 @@
-[Personal website](enesardabaydas.dev)
+enesardabaydas.dev
