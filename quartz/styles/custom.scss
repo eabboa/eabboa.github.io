@@ -1,8 +1,12 @@
 @use "./base.scss";
 
-img {
-  width: 100%;
-  height: auto !important;
-  object-fit: contain;
-  max-width: 100%;
+/* Systemic fix for stretched badges and images */
+article img, 
+.popover img,
+.content img {
+  width: auto !important;      /* Prevents stretching to container width */
+  max-width: 100% !important;  /* Ensures large images don't overflow */
+  height: auto !important;     /* Maintains aspect ratio */
+  display: inline-block;       /* Allows badges to sit side-by-side */
+  margin: 0.2rem 0;            /* Optional: subtle spacing */
 }
