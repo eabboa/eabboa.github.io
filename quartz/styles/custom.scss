@@ -10,3 +10,11 @@ article img,
   display: inline-block;       /* Allows badges to sit side-by-side */
   margin: 0.2rem 0;            /* Optional: subtle spacing */
 }
+
+
+code, pre {
+  font-family: "Cascadia Code", "JetBrains Mono", "Courier New", monospace !important;
+  line-height: 1.2 !important; /* Prevents vertical gaps in boxes */
+  white-space: pre !important;  /* Disables word-wrapping that breaks boxes */
+  overflow-x: auto;           /* Allows horizontal scrolling if the diagram is wide */
+}
