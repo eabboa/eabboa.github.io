@@ -1,3 +1,8 @@
 @use "./base.scss";
 
-// put your custom CSS here!
+img {
+  width: 100%;
+  height: auto !important;
+  object-fit: contain;
+  max-width: 100%;
+}
