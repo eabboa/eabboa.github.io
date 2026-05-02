@@ -9,11 +9,16 @@ title: Enes Arda Baydaş
 Istanbul, Türkiye | Available for Tier 1 SOC Analyst Internship
 </p>
 
-<p align="center">
-  <a href="https://linkedin.com/in/enesardabaydas"><img src="https://img.shields.io/badge/LinkedIn-blue?style=for-the-badge&logo=linkedin" height="30"/></a>
-  <a href="mailto:enesardabaydas@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" height="30" /></a>
-</p>
+<div style="text-align: center;">
+  <a href="https://linkedin.com/in/enesardabaydas">
+    <img src="https://img.shields.io/badge/LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" height="30"/>
+  </a>
+  <a href="mailto:enesardabaydas@gmail.com">
+    <img src="https://img.shields.io/badge/Gmail-%23D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" height="30" />
+  </a>
+</div>
 ## About Me
+
 SOC Analyst candidate building **proactive threat detection** and malware triage pipelines. Specialized in **custom lab environments** and **automation**. Currently a First-year Management Information Systems student at Marmara University.
 
 ##  Certifications & Continuous Learning
