@@ -44,14 +44,14 @@ SOC Analyst candidate building **proactive threat detection** and malware triage
 
 ## Featured Engineering Projects
 
-* **[Sentinel-Native AI-Augmented Triage Agent](https://github.com/eabboa/eabboa/blob/main/Home-Labs/Sentinel_Native_AI_Augmented_Triage_Agent.md)**
+* **[Sentinel-Native AI-Augmented Triage Agent](./Home-Labs/Sentinel_Native_Autonomous_Triage_Agent)**
     * ***Architecture***: Engineered a **bidirectional SOAR-lite pipeline** utilizing **LangGraph StateGraph** with **conditional routing** to dynamically orchestrate a $0-cost triage workflow via **Azure REST APIs** and **Managed Identities** (zero-secret architecture).
     * ***Asynchronous Orchestration***: Leverages `asyncio` and `aiohttp` to bypass synchronous API bottlenecks, executing **concurrent CTI enrichment** (VirusTotal/AbuseIPDB) and parallel incident polling with rate-limit semaphores.
     * ***Deterministic Reliability & Adaptive Learning***: Mitigates LLM unreliability by enforcing **strict Pydantic schemas** and integrating **RAG-based correction loops**, ensuring continuously improving query generation, token-efficient processing, and 100% valid state transitions.
     * ***Resilience & Active Containment***: Combined **Optimistic Concurrency Control (ETags)** for race-condition prevention with **active containment execution** and a **Human-in-the-Loop (HITL)** gate, enabling rapid, high-fidelity threat isolation and robust incident closure.
 
 
-* **[Autonomous Tier 1 Phishing Triage Pipeline](https://github.com/eabboa/eabboa/blob/main/Home-Labs/Autonomous_Tier_1_Phishing_Triage_Pipeline.md)**
+* **[Autonomous Tier 1 Phishing Triage Pipeline](./Home-Labs/Autonomous_Tier_1_Phishing_Triage_Pipeline)**
     * ***Architecture**:* Engineered a **two-process SOC automation system** using a LangGraph ReAct AI agent and a FastMCP tool server.
     * ***Capabilities**:* Automates email ingestion, extracts IOCs via Regex, queries **live threat intelligence** (VirusTotal API), and routes verdicts to a SIEM.
     * ***SIEM Integration**:* Configured **Splunk Enterprise** for continuous JSON log ingestion, building a real-time **"Single Pane of Glass"** dashboard for threat distribution and analyst queues.
