@@ -11,25 +11,6 @@
 **MITRE ATT&CK:** T1566.001 (Spearphishing Attachment), T1203 (Exploitation for Client Execution), T1059.001 (PowerShell), T1090.001 (Internal Proxy), T1134.001 (Token Impersonation/Theft), T1136.001 (Local Account), T1543.003 (Windows Service)  
 
 ---
-```mermaid
-flowchart LR
-classDef input fill:#4A90D9,color:#fff
-classDef process fill:#6B7280,color:#fff
-classDef decision fill:#F59E0B,color:#fff
-classDef output fill:#10B981,color:#fff
-
-id1([Malicious Doc Opened]):::input --> id2[Follina MSDT Exploit]:::process
-id2 --> id3[Download update.zip]:::process
-id3 --> id4[Execute first.exe C2]:::process
-id4 --> id5[Network Recon and Creds]:::process
-id5 --> id6[Run ch.exe Proxy]:::process
-id6 --> id7{Is System?}:::decision
-id7 -->|No| id8[Run PrintSpoofer]:::process
-id8 --> id9[Gain System Token]:::process
-id9 --> id10[Create Admin Users]:::process
-id7 -->|Yes| id10
-id10 --> id11[[Add TempestUpdate2]]:::output
-```
 
 ### Executive Summary
 An investigation into a critical SOC alert revealed the compromise of a Windows endpoint via a malicious `.doc` file weaponizing the Follina vulnerability (CVE-2022-30190). The threat actor successfully established a reverse SOCKS proxy using Chisel, escalated to SYSTEM privileges using PrintSpoofer, and secured persistence by creating rogue local administrator accounts and a persistent Windows service. 
