@@ -7,7 +7,9 @@ Istanbul, Türkiye · Available for Tier 1 SOC Analyst Internship
 
 ## The Operating System
 
-I engineer proactive threat detection systems and automate the tedious layers of security operations. My approach relies on first-principles thinking: breaking down manual SOC workflows and rebuilding them into asynchronous, AI-augmented pipelines. Currently an MIS Freshman at Marmara University. 
+I engineer proactive threat detection systems and automate the tedious layers of security operations. I break down manual SOC workflows and rebuild them as asynchronous, AI-augmented pipelines. Eliminating the tedious layers so analysts can focus on decisions, not tickets.
+
+*Currently an MIS Freshman at Marmara University.* 
 
 ## Proof of Work
 
