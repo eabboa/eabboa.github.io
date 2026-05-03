@@ -89,4 +89,4 @@ The network traffic analysis explicitly confirms a scheduled transfer (T1029), w
 
 - **Initial Delivery Vector Missing:** The provided PCAP captures the HTTP download of the payload but does not contain the preceding email traffic or IM chat logs that delivered the initial `proforma-invoices[.]com` link to the user.
     
-- **Host-Based Artifacts Unknown:** Because analysis was strictly limited to network captures, the exact persistence mechanisms (e.g., Run keys, Scheduled Tasks) established by `tkraw_Protected99.exe` on the local Windows NT 6.1 host cannot be verified.
+- **Host-Based Artifacts are Unknown:** Because analysis was strictly limited to network captures, the exact persistence mechanisms (e.g., Run keys, Scheduled Tasks) established by `tkraw_Protected99.exe` on the local Windows NT 6.1 host cannot be verified.
