@@ -10,8 +10,6 @@
 
 **MITRE ATT&CK:** T1197 (BITS Jobs), T1105 (Ingress Tool Transfer), T1071.001 (Application Layer Protocol: Web Protocols)  
 
-**GRC Mapping:** NIST CSF PR.PT-4 (Principle of Least Privilege), DE.AE-2 (Analyzed Events)
-
 ---
 
 ### Executive Summary

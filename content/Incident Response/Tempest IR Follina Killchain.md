@@ -10,8 +10,6 @@
 
 **MITRE ATT&CK:** T1566.001 (Spearphishing Attachment), T1203 (Exploitation for Client Execution), T1059.001 (PowerShell), T1090.001 (Internal Proxy), T1134.001 (Token Impersonation/Theft), T1136.001 (Local Account), T1543.003 (Windows Service)  
 
-**GRC Mapping:** NIST CSF PR.AC-4 (Access Control), DE.AE-2 (Anomalous Activity Detection), PR.PT-4 (Least Privilege)
-
 ---
 ```mermaid
 flowchart LR

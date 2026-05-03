@@ -10,8 +10,6 @@
 
 **MITRE ATT&CK:** T1071.001 (Application Layer Protocol), T1105 (Ingress Tool Transfer), T1204.002 (Malicious File)  
 
-**GRC Mapping:** NIST CSF DE.AE-2 (Analyze events to detect potential cybersecurity events), SOC 2 CC7.2 (Security incident monitoring)
-
 ---
 
 ### Executive Summary

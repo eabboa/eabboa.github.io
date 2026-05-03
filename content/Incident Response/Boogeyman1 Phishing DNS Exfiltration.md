@@ -10,8 +10,6 @@
 
 **MITRE ATT&CK:** T1566.001 (Spearphishing Attachment), T1059.001 (PowerShell), T1082 (System Information Discovery), T1005 (Data from Local System), T1048.003 (Exfiltration Over Alternative Protocol - Unencrypted Channel)  
 
-**GRC Mapping:** NIST CSF PR.PT-1; ISO 27001 A.12.4.1
-
 ---
 
 ````mermaid
