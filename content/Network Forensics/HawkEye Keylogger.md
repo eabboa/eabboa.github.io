@@ -59,7 +59,7 @@ The host initiated an outbound connection to a France-hosted LiteSpeed web serve
 
 Post-execution, the malware targeted local credential stores and applications. Packet stream analysis of the unencrypted SMTP traffic revealed the exact contents of the staged data prior to exfiltration.
 
-HawkEye successfully extracted credentials from:
+**HawkEye** successfully extracted credentials from:
 
 - **Google Chrome:** Bank of America (`roman[.]mcguire` / `P@ssword$`)
     
