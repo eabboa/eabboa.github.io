@@ -20,7 +20,7 @@ I engineer proactive threat detection systems and automate the tedious layers of
 
 ### 🔬 Lab Research & Write-ups 
 
-* **[Malware Analysis](https://enesardabaydas.dev/Detection-Engineering/):** Static & Dynamic triage of obfuscated payloads (Cryptbot, Loaders). Memory forensics of WannaCry and Agent Tesla VBA Droppers. 
+* **[Malware Analysis](Malware-Analysis):** Static & Dynamic triage of obfuscated payloads (Cryptbot, Loaders). Memory forensics of WannaCry and Agent Tesla VBA Droppers. 
 * **[Network Forensics](Network-Forensics):** PCAP analysis of C2 traffic, ARP/DNS spoofing, and CobaltStrike/IcedID infections. 
 * **[Detection Engineering](Detection-Engineering) & [SIEM Hunting](SIEM-Hunting):** Splunk/ELK hunting, custom YARA/Snort signatures, and Atomic Red Team emulation against Sysmon. 
 * **[Incident Response](Incident-Response):** Playbook containment and forensic timeline reconstruction for active breaches (Boogeyman, Follina).
