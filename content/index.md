@@ -35,4 +35,4 @@ I engineer proactive threat detection systems and automate the tedious layers of
 * **Frameworks:** MITRE ATT&CK®, MITRE D3FEND™, Unified Kill Chain.
 * **Cloud & Automation:** Azure, Entra ID, LangGraph.
 * **NTA:** Wireshark, Snort, Zeek, Brim.
-* **SIEM/EDR:** Microsoft Sentinel (KQL), Splunk (SPL), Elastic (ELK), Sysmon.
+* **SIEM/EDR:** Microsoft Sentinel, Splunk (SPL), Elastic (ELK), Sysmon.
