@@ -21,9 +21,9 @@
 
 _Note_: This project demonstrates the operational logic of cybersecurity automation. LLMs are strictly bound as reasoning engines, constrained by typed schemas and conditional routing, to solve SOC bottlenecks under rigid production requirements.
 
-_Status_: v0.5.0 Active
+_Status_: v0.6.0 Active
 
-_Last updated_: 29-04-2026
+_Last updated_: 05-05-2026
 
 ---
 
