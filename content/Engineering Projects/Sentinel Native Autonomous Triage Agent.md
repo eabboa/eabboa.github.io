@@ -31,7 +31,7 @@ _Last updated_: 05-05-2026
 
 Most SIEM integrations flow in one direction: a tool reads logs and produces output elsewhere. This project is **bidirectional**. Sentinel is both the source and the destination.
 
-The agent polls for new incidents, fetches the full incident object and raw alerts from the **Sentinel REST API**, and condenses them into a token-efficient summary. A hybrid extraction layer uses compiled regex for structured IOCs (IPs, hashes, URLs) and a secondary LLM call for contextual entities (usernames, hostnames, domains) that regex cannot reliably parse. Extracted indicators are then enriched concurrently through AbuseIPDB and VirusTotal, with per-request retries and rate-limit serialization.
+The agent polls for new incidents, fetches the full incident object and raw alerts from the **Sentinel REST API**, and condenses them into a token-efficient summary. A hybrid extraction layer uses compiled regex for structured IOCs (IPs, hashes, URLs) and a secondary LLM call for contextual entities (usernames, hostnames, domains) that regex cannot reliably parse. Extracted indicators are then enriched concurrently through AbuseIPDB and VirusTotal, utilizing a global connection pool and a Token Bucket rate limiter to ensure maximum concurrent throughput while strictly enforcing API limits.
 
 Before classification, the agent queries a **ChromaDB RAG store** for historical analyst corrections semantically similar to the current incident. These mismatches are injected as few-shot examples into the analyst prompt, grounding the model against previously observed mistakes. The LLM then produces a deterministic verdict via `with_structured_output` bound to a strict **Pydantic schema**, every field is typed, every classification is enumerated, and every confidence score is an exact integer.
 
@@ -55,7 +55,7 @@ That is the architecture SOAR platforms implement. This is a recreation of it fo
 | Adaptive Learning | ChromaDB RAG feedback loop. Analyst corrections are embedded via `all-MiniLM-L6-v2`, stored persistently, and retrieved as few-shot examples to reduce classification error iteratively. |
 | **Deterministic AI** | `with_structured_output(AnalystVerdict)` paired with a rigid Pydantic schema. The LLM is forced into strongly typed outputs (`classification`, `is_true_positive`, `confidence`, `triage_summary`, `mitre_analysis`, `recommended_action`). Validation failures are caught at the node level. |
 | **Schema-Gated KQL** | Hunting queries are constrained to an explicit table-column map (`SecurityAlert`, `SigninLogs`, `AuditLogs`, `SecurityEvent`, `OfficeActivity`). Tables are pre-filtered by detected MITRE ATT&CK tactics before prompt construction. |
-| **Asynchronous I/O** | `asyncio.gather` with `Semaphore(3)` for concurrent incident processing. `aiohttp` with `ClientTimeout` for CTI enrichment. VirusTotal calls are serialized with a 15-second inter-request sleep. |
+| **Asynchronous I/O** | `asyncio.gather` (with `return_exceptions=True` for error isolation) and `Semaphore(3)` for concurrent incident processing. A global `aiohttp.ClientSession` pool with `ClientTimeout` for CTI enrichment. VirusTotal API calls are processed fully concurrently but throttled by a Token Bucket rate limiter (`aiolimiter`). |
 | **Rate Limiting & Retry** | Sliding-window `APIRateLimiter` capping Gemini to 14 RPM. `tenacity` retries with exponential backoff + jitter on `429`, `503`, and `RESOURCE_EXHAUSTED` across all LLM and REST API calls. |
 | **Active Containment** | HITL-gated MDE device isolation and Entra ID session revocation via Azure REST APIs. All failures are captured as non-fatal errors. |
 
@@ -78,9 +78,9 @@ Each node adheres to the **Single Responsibility Principle**. The pipeline state
                  │  summarize  │  Deterministic truncation (no LLM)
                  └──────┬──────┘
                         │
-                  ┌─────▼─────┐
-                  │  extract  │  Regex (IPs/hashes/URLs) + LLM (usernames/hostnames)
-                  └─────┬─────┘
+                  ┌─────▼─────┐  Regex (IPs/hashes/URLs)
+                  │  extract  │   + 
+                  └─────┬─────┘  LLM(usernames/hostnames)
                         │
               ┌─────────┴─────────┐
        has IOCs?              no IOCs
@@ -165,7 +165,7 @@ Third-party threat intel APIs routinely throttle. The confidence scoring algorit
 Transient failures are inevitable in distributed systems. The pipeline implements retries at three independent layers:
 - **Azure REST API:** Shared `_http_request` wrapper with `tenacity` (3 attempts, exponential 1–10s) on `429`, `503`, `504`.
 - **Gemini LLM:** Per-node `tenacity` wrappers (5 attempts, exponential 5–60s + random jitter) on `429 RESOURCE_EXHAUSTED` and `503 UNAVAILABLE`. Internal `max_retries=0` on all `ChatGoogleGenerativeAI` instances prevents double-retry loops.
-- **CTI Enrichment:** `aiohttp` with `ClientTimeout(total=10)` and `tenacity` (3 attempts) on `ClientError`, `TimeoutError`, and transient HTTP codes.
+- **CTI Enrichment:** Global `aiohttp.ClientSession` with `ClientTimeout(total=10)` and `tenacity` (3 attempts) on `ClientError`, `TimeoutError`, and transient HTTP codes. Fully concurrent requests are safely throttled with a Token Bucket rate limiter.
 
 ### KQL Hallucination Mitigation
 LLMs hallucinate KQL. They invent table names, reference nonexistent columns, and mix schemas across data connectors. The KQL node constrains the model by injecting an explicit `SENTINEL_TABLE_SCHEMA` map into the prompt, listing only approved tables (`SecurityAlert`, `SigninLogs`, `AuditLogs`, `SecurityEvent`, `OfficeActivity`) with their canonical column names. Tables are pre-filtered by detected MITRE ATT&CK tactics before prompt construction, eliminating references to disconnected data sources.
