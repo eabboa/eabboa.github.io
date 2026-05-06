@@ -184,3 +184,17 @@ Every incident passes through the HITL gate.
 6. The terminal `learning` node captures any classification divergence between the LLM and the analyst, embedding it in ChromaDB for future retrieval.
 
 State persistence is handled by LangGraph's `MemorySaver` checkpointer with a unique `thread_id` per incident, ensuring each incident's execution context survives the interrupt without corruption.
+
+## TODOs:
+
+- **Schema-Filtered Field Projection**
+    
+    Instead of truncating entire alert objects, strip the JSON down to a pre-defined "Investigative Core." Remove high-cardinality but low-signal fields like `extendedProperties`, `resourceId`, or nested schema metadata. By preserving only the `alertName`, `description`, `entities`, and `tactics`, I can fit 5–10x more alerts into the same token window without losing the primary indicators required for extraction.
+    
+- **Fuzzy-String Incident Clustering**
+    
+    Apply a Levenshtein distance or Jaccard similarity algorithm to the `alertName` and `description` fields. Group repetitive alerts (e.g., 500 "Brute Force" attempts) into a single "Representative Alert" object that includes an added `occurrenceCount` and `timeRange`. This transforms a linear list of 1,000 objects into a compact set of unique behaviors, effectively neutralizing "noisy" incidents.
+    
+- **Kill-Chain Milestone Sampling**
+    
+    Shift from "First N" truncation to a temporal sampling strategy. Select the first alert (initial entry), the last alert (most recent activity), and the top three alerts with the highest severity or unique MITRE tactics in between. This ensures the agent sees the start, end, and critical "peaks" of the attack narrative, preventing the "blindness" caused by a massive volume of low-severity mid-stream events.
