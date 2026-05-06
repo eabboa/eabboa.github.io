@@ -15,7 +15,7 @@ I engineer proactive threat detection systems and automate the tedious layers of
 
 ### ⚙️ Engineering & Automation 
 
-* **[Sentinel-Native AI-Augmented Triage Agent](Sentinel%20Native%20Autonomous%20Triage%20Agent.md):** Engineered a zero-secret, $0-cost triage workflow utilizing LangGraph and Azure REST APIs. Bypassed synchronous API bottlenecks using `asyncio`, enabling concurrent CTI enrichment and parallel incident polling. 
+* **[Sentinel-Native AI-Augmented Triage Agent](Sentinel%20Native%20AI-Augmented%20Triage%20Agent.md):** Engineered a zero-secret, $0-cost triage workflow utilizing LangGraph and Azure REST APIs. Bypassed synchronous API bottlenecks using `asyncio`, enabling concurrent CTI enrichment and parallel incident polling. 
 * **[Autonomous Tier 1 Phishing Triage Pipeline](Autonomous%20Tier%201%20Phishing%20Triage%20Pipeline):** Built a two-process SOC automation system using a LangGraph ReAct agent and a FastMCP tool server. Automates email ingestion, live threat intelligence querying, and routes verdicts directly to Splunk. 
 
 ### 🔬 Lab Research & Write-ups 
