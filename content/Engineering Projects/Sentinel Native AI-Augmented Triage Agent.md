@@ -13,188 +13,56 @@
 ![tenacity](https://img.shields.io/badge/tenacity-Retry_Engine-FF6F00?style=flat-square)
 
 **Type:** Cloud Security · Detection Engineering · AI Automation  
-**Stack:** Microsoft Azure · Microsoft Sentinel · LangGraph · Pydantic · Managed Identities · Google Gemini · ChromaDB · VirusTotal · AbuseIPDB  
+**Stack:** Microsoft Sentinel · Azure · LangGraph · Google Gemini · VirusTotal · AbuseIPDB  
 **Cost:** $0 (free tier across all services)  
+**Status:** v0.6.0 Active  
 **Code:** [sentinel-triage-agent](https://github.com/eabboa/sentinel-triage-agent)
 
-**Objective:** A defensively engineered, zero-cost **SOAR architecture** designed to safely absorb Tier 1 benign-positive alarm fatigue without compromising true positive retention. It shifts the operational paradigm from reactive manual polling to deterministic, machine-speed orchestration with mandatory human oversight.
+## The Problem
 
-_Note_: This project demonstrates the operational logic of cybersecurity automation. LLMs are strictly bound as reasoning engines, constrained by typed schemas and conditional routing, to solve SOC bottlenecks under rigid production requirements.
+A Tier 1 SOC analyst spends the majority of their shift on one task: manually opening alerts, checking IP reputation, looking up hashes, and deciding whether something is worth escalating. Most of it isn't. This is the false positive problem. And it not only wastes time but also creates fatigue that causes analysts to miss the **_alerts that actually matter_**.
 
-_Status_: v0.6.0 Active
+This project automates the triage cycle for Microsoft Sentinel. Not the decision (the analyst still makes that), but everything that happens before the analyst needs to think.
 
-_Last updated_: 05-05-2026
+_Last updated_: 18-05-2026
 
----
+## What It Does
 
-## What I Built
+When a new incident appears in Sentinel, the agent:
 
-Most SIEM integrations flow in one direction: a tool reads logs and produces output elsewhere. This project is **bidirectional**. Sentinel is both the source and the destination.
+1. **Fetches the full incident** and all associated raw alerts from the Sentinel API
+2. **Extracts every indicator**. IP addresses, file hashes, URLs, usernames, and hostnames. Using a combination of pattern matching and a constrained AI call
+3. **Enriches those indicators in parallel** against VirusTotal and AbuseIPDB, respecting API rate limits automatically
+4. **Checks its own history and corrects itself**. A local vector database stores every case where the AI disagreed with an analyst's final call. Before issuing a verdict, it retrieves _similar past corrections and uses them to recalibrate_
+5. **Issues a structured verdict**: True Positive, False Positive, or Ambiguous. With a confidence score and a MITRE ATT&CK breakdown
+6. **Generates targeted hunting queries** (KQL) for ambiguous cases, constrained to tables that actually exist in the connected workspace rather than hallucinated.
+7. **Posts a full triage report** as a comment directly on the Sentinel incident. The analyst sees everything in one place.
+8. **Stops and waits.** No incident is closed. No device is isolated. Nothing happens until a human explicitly approves it.
 
-The agent polls for new incidents, fetches the full incident object and raw alerts from the **Sentinel REST API**, and condenses them into a token-efficient summary. A hybrid extraction layer uses compiled regex for structured IOCs (IPs, hashes, URLs) and a secondary LLM call for contextual entities (usernames, hostnames, domains) that regex cannot reliably parse. Extracted indicators are then enriched concurrently through AbuseIPDB and VirusTotal, utilizing a global connection pool and a Token Bucket rate limiter to ensure maximum concurrent throughput while strictly enforcing API limits.
+After the analyst reviews and decides, the system either executes containment actions (device isolation, session revocation) or closes the incident. Then, it records whether the AI's classification matched the analyst's. That divergence data feeds back into the history store, so the **system gets more accurate over time.**
 
-Before classification, the agent queries a **ChromaDB RAG store** for historical analyst corrections semantically similar to the current incident. These mismatches are injected as few-shot examples into the analyst prompt, grounding the model against previously observed mistakes. The LLM then produces a deterministic verdict via `with_structured_output` bound to a strict **Pydantic schema**, every field is typed, every classification is enumerated, and every confidence score is an exact integer.
+## Why This Architecture Matters
 
-Conditional routing branches on the classification and confidence. High-confidence true positives trigger an escalation path. Ambiguous verdicts route through **schema-gated KQL hunting query generation**, where the LLM is restricted to an explicit table-column map filtered by detected MITRE ATT&CK tactics. High-confidence false positives bypass KQL entirely and proceed directly to writeback.
+**The loop is closed.** Most automation tools are one-directional: they read from Sentinel and write somewhere else. This agent reads _from_ Sentinel and writes _back to_ Sentinel. The analyst never leaves their queue. The enrichment and verdict are waiting for them on the incident record.
 
-The structured triage report, verdict, MITRE analysis, enrichment results, and KQL queries are posted as a comment on the Sentinel incident record. The graph then **suspends execution** at a LangGraph interrupt point. No incident is closed, no device is isolated, and no session is revoked without **_explicit human approval_**. This is the critical enforcement boundary: the agent recommends, the analyst decides.
+**The AI is constrained, not autonomous.** The model cannot produce freeform output. Every verdict is validated against a strict schema: classification, confidence score, MITRE tactic mapping, and recommended action. All typed and enumerated. A response that doesn't conform to the schema is caught and handled before it reaches the analyst. Hunting queries are limited to verified table-column pairs; the model cannot reference tables that don't exist in the workspace.
 
-After review, conditional routing either executes MDE device isolation before closure or proceeds directly to the close review gate. A terminal learning node compares the LLM's classification against the analyst's human-provided classification; divergences are embedded and stored in ChromaDB, closing the feedback loop.
+**The human is the enforcement boundary.** The architecture makes autonomous closure structurally impossible, not just policy-prohibited. The pipeline suspends execution after posting the triage comment and will not resume without explicit analyst input. High-confidence verdicts do not bypass this gate. This is intentional: LLMs are probabilistic systems, and no confidence threshold justifies removing human judgment from a containment decision.
 
-That is the architecture SOAR platforms implement. This is a recreation of it for **$0**.
+**Failures degrade gracefully, never silently.** If a threat intel API times out, the confidence score is reduced, not quietly marked benign. If the cloud API returns a conflict because an analyst manually updated the incident during processing, the pipeline raises a conflict error rather than overwriting the analyst's work.
 
----
+## SOC Metrics This Addresses
 
-## What This Covers
-
-| Area | Specifics |
+| Metric | Impact |
 |---|---|
-| **Cloud Infrastructure** | Azure tenant setup, Log Analytics Workspace, Microsoft Sentinel REST API (stable `2023-02-01`). |
-| Identity & Access | Zero-secret architecture. `DefaultAzureCredential` inherits Managed Identity (production) or Azure CLI tokens (development). Module-level token cache with 5-minute expiry buffer. |
-| **Stateful Orchestration** | LangGraph `StateGraph` with 11 nodes, 3 conditional routing edges, `MemorySaver` checkpointing, and `interrupt_after` for human-in-the-loop suspension. |
-| Adaptive Learning | ChromaDB RAG feedback loop. Analyst corrections are embedded via `all-MiniLM-L6-v2`, stored persistently, and retrieved as few-shot examples to reduce classification error iteratively. |
-| **Deterministic AI** | `with_structured_output(AnalystVerdict)` paired with a rigid Pydantic schema. The LLM is forced into strongly typed outputs (`classification`, `is_true_positive`, `confidence`, `triage_summary`, `mitre_analysis`, `recommended_action`). Validation failures are caught at the node level. |
-| **Schema-Gated KQL** | Hunting queries are constrained to an explicit table-column map (`SecurityAlert`, `SigninLogs`, `AuditLogs`, `SecurityEvent`, `OfficeActivity`). Tables are pre-filtered by detected MITRE ATT&CK tactics before prompt construction. |
-| **Asynchronous I/O** | `asyncio.gather` (with `return_exceptions=True` for error isolation) and `Semaphore(3)` for concurrent incident processing. A global `aiohttp.ClientSession` pool with `ClientTimeout` for CTI enrichment. VirusTotal API calls are processed fully concurrently but throttled by a Token Bucket rate limiter (`aiolimiter`). |
-| **Rate Limiting & Retry** | Sliding-window `APIRateLimiter` capping Gemini to 14 RPM. `tenacity` retries with exponential backoff + jitter on `429`, `503`, and `RESOURCE_EXHAUSTED` across all LLM and REST API calls. |
-| **Active Containment** | HITL-gated MDE device isolation and Entra ID session revocation via Azure REST APIs. All failures are captured as non-fatal errors. |
+| **Mean Time to Triage** | Enrichment, extraction, and classification run automatically. The triage report is waiting on the incident before a human opens the queue. |
+| **Alert-to-Analyst Ratio** | High-confidence false positives are routed directly to writeback, removing them from the manual review queue entirely. |
+| **True Positive Retention** | The human-in-the-loop gate ensures no real threat is closed without analyst sign-off, regardless of the AI's confidence. |
+| **Mean Time to Contain** | Containment actions are pre-staged and execute immediately on analyst approval. No manual API interaction required. |
+| **Classification Accuracy (over time)** | Every AI-analyst disagreement is stored and retrieved as a prior on future similar incidents. The system learns from its mistakes. |
 
----
+## Full Technical Documentation
 
-## Architecture Flow
+Implementation details, such as state graph design, async concurrency model, rate limiting, retry architecture, Pydantic schemas, ChromaDB RAG pipeline, ETag-based optimistic concurrency, and KQL hallucination mitigation, are documented in the repository.
 
-Each node adheres to the **Single Responsibility Principle**. The pipeline state is managed by `TriageState`, a `TypedDict` used for LangGraph state management.
-
-```
-                    ┌───────┐
-                    │ START │
-                    └───┬───┘
-                        │
-                   ┌────▼────┐
-                   │  fetch  │  GET incident + POST alerts via Sentinel REST API
-                   └────┬────┘
-                        │
-                 ┌──────▼──────┐
-                 │  summarize  │  Deterministic truncation (no LLM)
-                 └──────┬──────┘
-                        │
-                  ┌─────▼─────┐  Regex (IPs/hashes/URLs)
-                  │  extract  │   + 
-                  └─────┬─────┘  LLM(usernames/hostnames)
-                        │
-              ┌─────────┴─────────┐
-       has IOCs?              no IOCs
-              │                   │
-        ┌─────▼─────┐             │
-        │  enrich   │             │
-        └─────┬─────┘             │
-              └─────────┬─────────┘
-                        │
-                  ┌─────▼─────┐
-                  │  analyst  │  LLM verdict + RAG few-shot correction
-                  └─────┬─────┘
-                        │
-          ┌─────────────┼─────────────┐
-     TP > 90%      ambiguous      FP > 95%
-          │             │             │
-   ┌──────▼──────┐ ┌───▼───┐          │
-   │ escalation  │ │  kql  │          │
-   └──────┬──────┘ └───┬───┘          │
-          └─────────────┼─────────────┘
-                        │
-                 ┌──────▼──────┐
-                 │  writeback  │  POST triage comment to Sentinel
-                 └──────┬──────┘
-                        │
-              ══════ INTERRUPT ══════  (human review gate)
-                        │
-           ┌────────────┴────────────┐
-    containment                 no containment
-    approved?                        │
-           │                         │
-   ┌───────▼───────┐                 │
-   │  containment  │  MDE isolate    │
-   └───────┬───────┘                 │
-           └────────────┬────────────┘
-                        │
-                ┌───────▼───────┐
-                │ close_review  │  Sentinel close (if analyst approves)
-                └───────┬───────┘
-                        │
-                 ┌──────▼──────┐
-                 │  learning   │  RAG correction loop (ChromaDB)
-                 └──────┬──────┘
-                        │
-                    ┌───▼───┐
-                    │  END  │
-                    └───────┘
-```
-
-### Conditional Routing Logic
-
-Three conditional edges govern the pipeline:
-
-1. **After `extract`:** If regex found IPs, hashes, or URLs → route to `enrich`. Otherwise → skip directly to `analyst`, avoiding unnecessary CTI API calls.
-
-2. **After `analyst`:** The LLM verdict determines the next node:
-   - `TruePositive` with confidence > 90 → `escalation` (high-severity path).
-   - `FalsePositive` with confidence > 95 → bypass KQL, proceed directly to `writeback`.
-   - All other cases → `kql` (generate hunting queries for ambiguous incidents).
-
-3. **After `writeback` (post-HITL interrupt):** If the analyst approves containment → `containment` → `close_review`. Otherwise → `close_review` directly. No Autonomous closure occurs regardless of classification or confidence score.
-
----
-
-## Designing for Failure
-
-A security automation tool that fails open or corrupts state is a liability. Applying the principle of inversion, solving for what guarantees failure, and then engineering it out, produces the following fault-tolerance mechanisms:
-
-### Race Condition Immunity (Optimistic Concurrency Control)
-Human analysts and automated rules interact with incidents simultaneously. The pipeline fetches the incident's current ETag before every update and attaches it as an `If-Match` header on the `PUT` request. If the incident state mutated during the agent's execution window, Azure returns `412 Precondition Failed`, and the pipeline raises a `ConcurrencyConflictError` rather than silently overwriting an analyst's manual update.
-
-### Credential Compromise Elimination
-Hardcoded secrets are an unacceptable attack vector. The pipeline authenticates exclusively through `DefaultAzureCredential`, inheriting the identity of the compute environment. **In production**, this means **Azure Managed Identity with scoped RBAC** (`Microsoft Sentinel Contributor`). In development, it falls back to `az login` tokens. Tokens are cached module-level with a 5-minute expiry buffer to avoid unnecessary round-trip latency. No MSAL client secrets, no credential rotation, no static keys.
-
-### Probabilistic Containment
-LLMs are probabilistic, which makes them dangerous for Autonomous state machines. Every LLM output is bound to a strict **Pydantic schema** (`AnalystVerdict`) via `with_structured_output`. The model is forced into strongly typed outputs: an enumerated `classification`, a boolean `is_true_positive`, and an integer `confidence` score. Validation errors are caught at the node level and returned as structured error objects, preventing cascading failures or hallucinatory KQL execution. Additionally, no incident is closed, and no device is isolated without passing through the HITL interrupt gate.
-
-### Graceful Degradation on CTI Timeout
-Third-party threat intel APIs routinely throttle. The confidence scoring algorithm treats missing or timed-out CTI data as a **neutral baseline** (0-point modifier) rather than defaulting to "benign." This ensures that transient network errors or rate limits never result in false negatives. All CTI calls are wrapped with `aiohttp` timeouts, `tenacity` retries, and structured error capture. A failed enrichment degrades the confidence range; it never silently downgrades severity.
-
-### Multi-Layer Retry Architecture
-Transient failures are inevitable in distributed systems. The pipeline implements retries at three independent layers:
-- **Azure REST API:** Shared `_http_request` wrapper with `tenacity` (3 attempts, exponential 1–10s) on `429`, `503`, `504`.
-- **Gemini LLM:** Per-node `tenacity` wrappers (5 attempts, exponential 5–60s + random jitter) on `429 RESOURCE_EXHAUSTED` and `503 UNAVAILABLE`. Internal `max_retries=0` on all `ChatGoogleGenerativeAI` instances prevents double-retry loops.
-- **CTI Enrichment:** Global `aiohttp.ClientSession` with `ClientTimeout(total=10)` and `tenacity` (3 attempts) on `ClientError`, `TimeoutError`, and transient HTTP codes. Fully concurrent requests are safely throttled with a Token Bucket rate limiter.
-
-### KQL Hallucination Mitigation
-LLMs hallucinate KQL. They invent table names, reference nonexistent columns, and mix schemas across data connectors. The KQL node constrains the model by injecting an explicit `SENTINEL_TABLE_SCHEMA` map into the prompt, listing only approved tables (`SecurityAlert`, `SigninLogs`, `AuditLogs`, `SecurityEvent`, `OfficeActivity`) with their canonical column names. Tables are pre-filtered by detected MITRE ATT&CK tactics before prompt construction, eliminating references to disconnected data sources.
-
----
-
-## Mandatory Human-in-the-Loop Enforcement
-
-Every incident passes through the HITL gate.
-
-1. The graph compiles with `interrupt_after=["writeback"]`. After the triage comment is posted to Sentinel, execution **suspends**.
-2. The analyst reviews the verdict, MITRE analysis, enrichment results, and recommended actions in the console.
-3. If compromised hostnames are present, the analyst is prompted to approve device containment.
-4. The analyst approves or denies incident closure.
-5. Only after explicit approval does the graph resume, executing containment (if approved) and then `close_review`.
-6. The terminal `learning` node captures any classification divergence between the LLM and the analyst, embedding it in ChromaDB for future retrieval.
-
-State persistence is handled by LangGraph's `MemorySaver` checkpointer with a unique `thread_id` per incident, ensuring each incident's execution context survives the interrupt without corruption.
-
-## TODOs:
-
-- **Schema-Filtered Field Projection**
-    
-    Instead of truncating entire alert objects, strip the JSON down to a pre-defined "Investigative Core." Remove high-cardinality but low-signal fields like `extendedProperties`, `resourceId`, or nested schema metadata. By preserving only the `alertName`, `description`, `entities`, and `tactics`, I can fit 5–10x more alerts into the same token window without losing the primary indicators required for extraction.
-    
-- **Fuzzy-String Incident Clustering**
-    
-    Apply a Levenshtein distance or Jaccard similarity algorithm to the `alertName` and `description` fields. Group repetitive alerts (e.g., 500 "Brute Force" attempts) into a single "Representative Alert" object that includes an added `occurrenceCount` and `timeRange`. This transforms a linear list of 1,000 objects into a compact set of unique behaviors, effectively neutralizing "noisy" incidents.
-    
-- **Kill-Chain Milestone Sampling**
-    
-    Shift from "First N" truncation to a temporal sampling strategy. Select the first alert (initial entry), the last alert (most recent activity), and the top three alerts with the highest severity or unique MITRE tactics in between. This ensures the agent sees the start, end, and critical "peaks" of the attack narrative, preventing the "blindness" caused by a massive volume of low-severity mid-stream events.
+→ [github.com/eabboa/sentinel-triage-agent](https://github.com/eabboa/sentinel-triage-agent)
