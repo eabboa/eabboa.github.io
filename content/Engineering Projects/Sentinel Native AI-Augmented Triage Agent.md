@@ -15,7 +15,7 @@
 **Type:** Cloud Security · Detection Engineering · AI Automation  
 **Stack:** Microsoft Sentinel · Azure · LangGraph · Google Gemini · VirusTotal · AbuseIPDB  
 **Cost:** $0 (free tier across all services)  
-**Status:** v0.6.0 Active  
+**Status:** v0.7.0 Active  
 **Code:** [sentinel-triage-agent](https://github.com/eabboa/sentinel-triage-agent)
 
 ## The Problem
