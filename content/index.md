@@ -1,10 +1,8 @@
 ---
 title: Enes Arda Baydaş
 ---
-**Building Autonomous Triage Pipelines & Detection Engineering Labs**
 
-Istanbul, Türkiye · Available for Tier 1 SOC Analyst Internship
-
+Istanbul, Türkiye
 ## The Operating System
 
 I engineer proactive threat detection systems and automate the tedious layers of security operations. I break down manual SOC workflows and rebuild them as asynchronous, AI-augmented pipelines. Eliminating the tedious layers so analysts can focus on decisions, not tickets.
