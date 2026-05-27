@@ -24,8 +24,6 @@ A Tier 1 SOC analyst spends the majority of their shift on one task: manually op
 
 This project automates the triage cycle for Microsoft Sentinel. Not the decision (the analyst still makes that), but everything that happens before the analyst needs to think.
 
-_Last updated_: 18-05-2026
-
 ## What It Does
 
 When a new incident appears in Sentinel, the agent:
