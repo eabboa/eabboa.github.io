@@ -1,3 +1,7 @@
+---
+date: 2026-04-22
+---
+
 ### Detection Engineering: Validating Telemetry and Telemetry Gaps via Threat Emulation
 
 **Date:** 2026-04-22  

@@ -1,3 +1,7 @@
+---
+date: 2026-03-23
+---
+
 ### SIEM Hunting: Identifying BITSAdmin LOLBin C2 Traffic in Kibana
 
 **Date:** 2026-03-23

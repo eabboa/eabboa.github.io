@@ -1,3 +1,7 @@
+---
+date: 2026-03-27
+---
+
 ### DFIR: Tracking Follina (CVE-2022-30190) Exploitation to PrintSpoofer Privilege Escalation
 
 **Date:** 2026-03-27  

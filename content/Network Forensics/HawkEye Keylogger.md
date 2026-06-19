@@ -1,3 +1,7 @@
+---
+date: 2026-05-03
+---
+
 # Network Forensics Analysis: HawkEye Keylogger Reborn v9
 
 **Date:** May 3, 2026

@@ -1,3 +1,7 @@
+---
+date: 2026-05-06
+---
+
 # Sentinel-Native AI-Augmented Triage Agent
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)

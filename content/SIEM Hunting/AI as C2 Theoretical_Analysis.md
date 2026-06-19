@@ -1,3 +1,7 @@
+---
+date: 2026-02-21
+---
+
 # Threat Hunting: AI-as-a-C2 via Indirect Prompt Injection
 
 **Date:** 2026-02-21

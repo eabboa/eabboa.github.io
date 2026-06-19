@@ -1,3 +1,7 @@
+---
+date: 2026-04-14
+---
+
 ### DFIR: Memory Analysis of Macro-Enabled Phishing and C2 Persistence
 
 **Date:** 2026-04-14  

@@ -1,3 +1,7 @@
+---
+date: 2026-05-03
+---
+
 # Autonomous Tier 1 Phishing Triage Pipeline
 
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
