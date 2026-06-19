@@ -1,3 +1,7 @@
+---
+date: 2026-03-11
+---
+
 # Threat Hunt Report: LOLBin C2 Beaconing via BITS Jobs
 
 **Date:** 2026-03-11 

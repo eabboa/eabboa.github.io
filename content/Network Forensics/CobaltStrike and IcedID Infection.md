@@ -1,3 +1,7 @@
+---
+date: 2026-03-16
+---
+
 ### CobaltStrike and IcedID Infection: Network Traffic Analysis and C2 Identification
 
 **Date:** 2026-03-16  

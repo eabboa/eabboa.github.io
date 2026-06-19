@@ -1,3 +1,7 @@
+---
+date: 2026-04-01
+---
+
 ### DFIR: Tracking Phishing, Local Enumeration, and DNS Tunneling Exfiltration
 
 **Date:** 2026-04-01  

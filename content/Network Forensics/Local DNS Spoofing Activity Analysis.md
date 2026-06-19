@@ -1,3 +1,7 @@
+---
+date: 2026-03-04
+---
+
 # Network Forensics: Triage of Local DNS Spoofing Activity
 
 **Date:** 2026-03-04

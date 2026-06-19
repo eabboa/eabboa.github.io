@@ -1,3 +1,7 @@
+---
+date: 2026-03-09
+---
+
 # PCAP Analysis of SSL Stripping & Credential Theft
 
 **Date:** 2026-03-09

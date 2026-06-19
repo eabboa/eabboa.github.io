@@ -1,3 +1,7 @@
+---
+date: 2026-02-20
+---
+
 # Network Traffic Analysis: ARP Spoofing and Competing MITM Actors
 
 **Date:** 2026-02-20
